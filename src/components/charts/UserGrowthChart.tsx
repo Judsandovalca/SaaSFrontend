@@ -43,6 +43,7 @@ export function UserGrowthChart({ data }: UserGrowthChartProps) {
               color: "#e2e8f0",
             }}
             labelStyle={{ color: "#94a3b8" }}
+            cursor={{ fill: "rgba(99, 102, 241, 0.15)" }}
           />
           <Legend
             wrapperStyle={{ color: "#94a3b8", fontSize: 12 }}

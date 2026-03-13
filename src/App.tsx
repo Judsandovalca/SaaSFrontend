@@ -1,9 +1,6 @@
+import { lazy, Suspense, useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { MetricCard } from "@/components/cards/MetricCard";
-import { RevenueChart } from "@/components/charts/RevenueChart";
-import { UserGrowthChart } from "@/components/charts/UserGrowthChart";
-import { SubscriptionPie } from "@/components/charts/SubscriptionPie";
-import { ChurnTable } from "@/components/charts/ChurnTable";
 import { FilterBar } from "@/components/filters/FilterBar";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { FilterProvider } from "@/context/FilterContext";
@@ -14,7 +11,27 @@ import {
   TableSkeleton,
 } from "@/components/ui/LoadingSkeleton";
 import { DollarSign, Users, TrendingDown, Headphones } from "lucide-react";
-import { useState, useEffect } from "react";
+
+const RevenueChart = lazy(() =>
+  import("@/components/charts/RevenueChart").then((m) => ({
+    default: m.RevenueChart,
+  }))
+);
+const UserGrowthChart = lazy(() =>
+  import("@/components/charts/UserGrowthChart").then((m) => ({
+    default: m.UserGrowthChart,
+  }))
+);
+const SubscriptionPie = lazy(() =>
+  import("@/components/charts/SubscriptionPie").then((m) => ({
+    default: m.SubscriptionPie,
+  }))
+);
+const ChurnTable = lazy(() =>
+  import("@/components/charts/ChurnTable").then((m) => ({
+    default: m.ChurnTable,
+  }))
+);
 
 function getChange(current: number, previous: number): number {
   if (previous === 0) return 0;
@@ -125,16 +142,24 @@ function Dashboard() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <ErrorBoundary fallbackTitle="Revenue chart failed to load">
-              <RevenueChart data={data.monthlyRevenue} />
+              <Suspense fallback={<ChartSkeleton />}>
+                <RevenueChart data={data.monthlyRevenue} />
+              </Suspense>
             </ErrorBoundary>
             <ErrorBoundary fallbackTitle="User growth chart failed to load">
-              <UserGrowthChart data={data.userSignups} />
+              <Suspense fallback={<ChartSkeleton />}>
+                <UserGrowthChart data={data.userSignups} />
+              </Suspense>
             </ErrorBoundary>
             <ErrorBoundary fallbackTitle="Subscription chart failed to load">
-              <SubscriptionPie data={data.subscriptionDistribution} />
+              <Suspense fallback={<ChartSkeleton />}>
+                <SubscriptionPie data={data.subscriptionDistribution} />
+              </Suspense>
             </ErrorBoundary>
             <ErrorBoundary fallbackTitle="Churn table failed to load">
-              <ChurnTable data={data.churnData} />
+              <Suspense fallback={<TableSkeleton />}>
+                <ChurnTable data={data.churnData} />
+              </Suspense>
             </ErrorBoundary>
           </div>
         </>

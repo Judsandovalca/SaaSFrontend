@@ -44,7 +44,7 @@ export function FilterBar() {
         <select
           value={filters.startMonth}
           onChange={(e) => handleStartChange(e.target.value)}
-          className="rounded-lg bg-slate-800 border border-slate-700 text-slate-200 text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="rounded-lg bg-slate-800 border border-slate-700 text-slate-200 text-sm pl-3 pr-8 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
         >
           {allMonths.map((m) => (
             <option key={m} value={m}>
@@ -59,7 +59,7 @@ export function FilterBar() {
         <select
           value={filters.endMonth}
           onChange={(e) => handleEndChange(e.target.value)}
-          className="rounded-lg bg-slate-800 border border-slate-700 text-slate-200 text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="rounded-lg bg-slate-800 border border-slate-700 text-slate-200 text-sm pl-3 pr-8 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
         >
           {allMonths.map((m) => (
             <option key={m} value={m}>
