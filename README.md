@@ -1,56 +1,73 @@
-# SaaS Dashboard Frontend
+# React + TypeScript + Vite
 
-A React dashboard displaying 6+ months of mock SaaS metrics with interactive charts, filtering, responsive layout, and professional design.
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-## Tech Stack
+Currently, two official plugins are available:
 
-- **Framework**: React 18 + Vite
-- **Language**: TypeScript
-- **Charts**: Recharts
-- **Styling**: Tailwind CSS
-- **Table**: TanStack Table (v8)
-- **Icons**: Lucide React
-- **Date utilities**: date-fns
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
 
-## Features
+## React Compiler
 
-- **KPI Summary Cards** — Total Revenue, Active Users, Churn Rate, and Avg Support Response Time with trend indicators
-- **Interactive Charts** — Revenue trend (line), User growth (bar), Subscription mix (donut), Churn/retention (table)
-- **Filtering** — Date range picker and subscription tier multi-select, applied across all charts and cards
-- **Loading States** — Simulated async fetch with skeleton loaders
-- **Error Handling** — Per-chart error boundaries with retry
-- **Responsive Design** — Desktop (2-column grid + sidebar), Tablet (1-column, collapsible sidebar), Mobile (stacked layout, hamburger menu)
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-## Mock Data
+## Expanding the ESLint configuration
 
-All data is generated locally in `src/data/mockData.ts` — no backend required. Datasets include:
+If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
 
-- Monthly Revenue (MRR/ARR)
-- User Signups & Activity
-- Subscription Tier Distribution
-- Churn & Retention
-- Support Tickets
+```js
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
 
-## Getting Started
+      // Remove tseslint.configs.recommended and replace with this
+      tseslint.configs.recommendedTypeChecked,
+      // Alternatively, use this for stricter rules
+      tseslint.configs.strictTypeChecked,
+      // Optionally, add this for stylistic rules
+      tseslint.configs.stylisticTypeChecked,
 
-```bash
-npm install
-npm run dev
+      // Other configs...
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
 ```
 
-## Project Structure
+You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
 
-```
-src/
-├── data/            # Mock datasets & types
-├── components/
-│   ├── layout/      # DashboardLayout, Sidebar, Header
-│   ├── cards/       # MetricCard (KPI summary)
-│   ├── charts/      # RevenueChart, UserGrowthChart, SubscriptionPie, ChurnTable
-│   ├── filters/     # FilterBar (date range + tier)
-│   ├── icons/       # SVG icon components
-│   └── ui/          # LoadingSkeleton, ErrorBoundary
-├── hooks/           # useFilteredData
-├── context/         # FilterContext
-└── types/           # Shared TypeScript interfaces
+```js
+// eslint.config.js
+import reactX from 'eslint-plugin-react-x'
+import reactDom from 'eslint-plugin-react-dom'
+
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
+      // Enable lint rules for React
+      reactX.configs['recommended-typescript'],
+      // Enable lint rules for React DOM
+      reactDom.configs.recommended,
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
 ```
