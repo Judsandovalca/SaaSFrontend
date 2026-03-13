@@ -1,6 +1,13 @@
 import { useFilters } from "@/context/FilterContext";
 import { allMonths } from "@/data/mockData";
 import { RotateCcw } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const TIERS = ["Free", "Pro", "Enterprise"] as const;
 
@@ -41,32 +48,34 @@ export function FilterBar() {
     <div className="flex flex-wrap items-center gap-3 mb-6">
       <div className="flex items-center gap-2">
         <label className="text-xs font-medium text-slate-400">From</label>
-        <select
-          value={filters.startMonth}
-          onChange={(e) => handleStartChange(e.target.value)}
-          className="rounded-lg bg-slate-800 border border-slate-700 text-slate-200 text-sm pl-3 pr-8 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        >
-          {allMonths.map((m) => (
-            <option key={m} value={m}>
-              {m}
-            </option>
-          ))}
-        </select>
+        <Select value={filters.startMonth} onValueChange={handleStartChange}>
+          <SelectTrigger className="w-[140px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {allMonths.map((m) => (
+              <SelectItem key={m} value={m}>
+                {m}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="flex items-center gap-2">
         <label className="text-xs font-medium text-slate-400">To</label>
-        <select
-          value={filters.endMonth}
-          onChange={(e) => handleEndChange(e.target.value)}
-          className="rounded-lg bg-slate-800 border border-slate-700 text-slate-200 text-sm pl-3 pr-8 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        >
-          {allMonths.map((m) => (
-            <option key={m} value={m}>
-              {m}
-            </option>
-          ))}
-        </select>
+        <Select value={filters.endMonth} onValueChange={handleEndChange}>
+          <SelectTrigger className="w-[140px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {allMonths.map((m) => (
+              <SelectItem key={m} value={m}>
+                {m}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="h-6 w-px bg-slate-700 hidden sm:block" />
