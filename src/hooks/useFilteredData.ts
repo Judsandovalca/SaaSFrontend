@@ -58,31 +58,11 @@ function filterMrrByTiers(data: MrrByTier[], tiers: TierName[]): MrrByTier[] {
   });
 }
 
-/**
- * Given a selected range [startMonth, endMonth], compute the "previous period"
- * of the same length immediately before startMonth.
- */
-function getPreviousPeriodRange(startMonth: string, endMonth: string) {
-  const startIdx = allMonths.indexOf(startMonth);
-  const endIdx = allMonths.indexOf(endMonth);
-  const length = endIdx - startIdx + 1;
-  const prevStart = Math.max(0, startIdx - length);
-  const prevEnd = startIdx - 1;
-  if (prevEnd < 0) return null;
-  return { start: allMonths[prevStart], end: allMonths[prevEnd] };
-}
-
-export interface FilteredDataResult {
-  current: DashboardData;
-  previous: DashboardData | null;
-  compareMode: boolean;
-}
-
-export function useFilteredData(): FilteredDataResult {
+export function useFilteredData(): DashboardData {
   const { filters } = useFilters();
 
   return useMemo(() => {
-    const { startMonth, endMonth, selectedTiers, compareMode } = filters;
+    const { startMonth, endMonth, selectedTiers } = filters;
 
     const filteredRevenue = filterRevenueByTiers(
       filterByMonthRange(monthlyRevenue, startMonth, endMonth),
@@ -99,7 +79,7 @@ export function useFilteredData(): FilteredDataResult {
       selectedTiers
     );
 
-    const current: DashboardData = {
+    return {
       monthlyRevenue: filteredRevenue,
       userSignups: filteredSignups,
       subscriptionDistribution: filteredSubscription,
@@ -107,33 +87,5 @@ export function useFilteredData(): FilteredDataResult {
       supportTickets: filteredTickets,
       mrrByTier: filteredMrr,
     };
-
-    let previous: DashboardData | null = null;
-    if (compareMode) {
-      const prevRange = getPreviousPeriodRange(startMonth, endMonth);
-      if (prevRange) {
-        const prevRevenue = filterRevenueByTiers(
-          filterByMonthRange(monthlyRevenue, prevRange.start, prevRange.end),
-          selectedTiers
-        );
-        const prevSignups = filterByMonthRange(userSignups, prevRange.start, prevRange.end);
-        const prevChurn = filterByMonthRange(churnData, prevRange.start, prevRange.end);
-        const prevTickets = filterByMonthRange(supportTickets, prevRange.start, prevRange.end);
-        const prevMrr = filterMrrByTiers(
-          filterByMonthRange(mrrByTier, prevRange.start, prevRange.end),
-          selectedTiers
-        );
-        previous = {
-          monthlyRevenue: prevRevenue,
-          userSignups: prevSignups,
-          subscriptionDistribution: filteredSubscription,
-          churnData: prevChurn,
-          supportTickets: prevTickets,
-          mrrByTier: prevMrr,
-        };
-      }
-    }
-
-    return { current, previous, compareMode };
   }, [filters]);
 }

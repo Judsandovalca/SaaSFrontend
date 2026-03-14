@@ -9,7 +9,6 @@ import { allMonths } from "@/data/mockData";
 type FilterAction =
   | { type: "SET_DATE_RANGE"; start: string; end: string }
   | { type: "SET_TIERS"; tiers: FilterState["selectedTiers"] }
-  | { type: "TOGGLE_COMPARE" }
   | { type: "RESET" };
 
 // ---------------------------------------------------------------------------
@@ -21,7 +20,6 @@ const defaultFilters: FilterState = {
   startMonth: allMonths[0],
   endMonth: allMonths[allMonths.length - 1],
   selectedTiers: ALL_TIERS,
-  compareMode: false,
 };
 
 // ---------------------------------------------------------------------------
@@ -33,8 +31,6 @@ function filterReducer(state: FilterState, action: FilterAction): FilterState {
       return { ...state, startMonth: action.start, endMonth: action.end };
     case "SET_TIERS":
       return { ...state, selectedTiers: action.tiers };
-    case "TOGGLE_COMPARE":
-      return { ...state, compareMode: !state.compareMode };
     case "RESET":
       return defaultFilters;
   }
@@ -49,7 +45,6 @@ function readFiltersFromURL(): FilterState {
   const start = params.get("from");
   const end = params.get("to");
   const tiers = params.get("tiers");
-  const compare = params.get("compare");
 
   const startMonth =
     start && allMonths.includes(start) ? start : defaultFilters.startMonth;
@@ -64,7 +59,7 @@ function readFiltersFromURL(): FilterState {
     if (parsed.length > 0) selectedTiers = parsed;
   }
 
-  return { startMonth, endMonth, selectedTiers, compareMode: compare === "1" };
+  return { startMonth, endMonth, selectedTiers };
 }
 
 function writeFiltersToURL(filters: FilterState) {
@@ -73,17 +68,13 @@ function writeFiltersToURL(filters: FilterState) {
   const isDefault =
     filters.startMonth === defaultFilters.startMonth &&
     filters.endMonth === defaultFilters.endMonth &&
-    filters.selectedTiers.length === ALL_TIERS.length &&
-    !filters.compareMode;
+    filters.selectedTiers.length === ALL_TIERS.length;
 
   if (!isDefault) {
     params.set("from", filters.startMonth);
     params.set("to", filters.endMonth);
     if (filters.selectedTiers.length < ALL_TIERS.length) {
       params.set("tiers", filters.selectedTiers.join(","));
-    }
-    if (filters.compareMode) {
-      params.set("compare", "1");
     }
   }
 
@@ -99,7 +90,6 @@ interface FilterContextValue {
   filters: FilterState;
   setDateRange: (start: string, end: string) => void;
   setTiers: (tiers: FilterState["selectedTiers"]) => void;
-  toggleCompare: () => void;
   resetFilters: () => void;
 }
 
@@ -120,16 +110,12 @@ export function FilterProvider({ children }: { children: ReactNode }) {
     dispatch({ type: "SET_TIERS", tiers });
   }, []);
 
-  const toggleCompare = useCallback(() => {
-    dispatch({ type: "TOGGLE_COMPARE" });
-  }, []);
-
   const resetFilters = useCallback(() => {
     dispatch({ type: "RESET" });
   }, []);
 
   return (
-    <FilterContext.Provider value={{ filters, setDateRange, setTiers, toggleCompare, resetFilters }}>
+    <FilterContext.Provider value={{ filters, setDateRange, setTiers, resetFilters }}>
       {children}
     </FilterContext.Provider>
   );

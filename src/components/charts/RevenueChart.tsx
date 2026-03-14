@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import {
   ResponsiveContainer,
   LineChart,
@@ -8,7 +7,6 @@ import {
   CartesianGrid,
   Tooltip,
   ReferenceLine,
-  Legend,
   Brush,
 } from "recharts";
 import type { MonthlyRevenue } from "@/types";
@@ -17,14 +15,13 @@ import { useChartTheme } from "@/hooks/useChartTheme";
 
 interface RevenueChartProps {
   data: MonthlyRevenue[];
-  previousData?: MonthlyRevenue[];
 }
 
 function formatCurrency(value: number): string {
   return `$${(value / 1000).toFixed(0)}K`;
 }
 
-export function RevenueChart({ data, previousData }: RevenueChartProps) {
+export function RevenueChart({ data }: RevenueChartProps) {
   const colors = useChartTheme();
 
   const avgRevenue =
@@ -32,24 +29,14 @@ export function RevenueChart({ data, previousData }: RevenueChartProps) {
       ? data.reduce((sum, d) => sum + d.revenue, 0) / data.length
       : 0;
 
-  const mergedData = useMemo(() => {
-    if (!previousData || previousData.length === 0) return data;
-    return data.map((d, i) => ({
-      ...d,
-      prevRevenue: previousData[i]?.revenue ?? null,
-    }));
-  }, [data, previousData]);
-
-  const showComparison = previousData && previousData.length > 0;
-
   return (
     <div className="rounded-xl bg-white border border-slate-200 dark:bg-slate-800 dark:border-slate-700 p-6 transition-all duration-200 hover:border-slate-300 dark:hover:border-slate-600">
       <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-1.5">
         Revenue Trend
         <InfoTooltip text="Monthly Recurring Revenue (MRR) over time. Shows total income from all paying subscribers each month." />
       </h3>
-      <ResponsiveContainer width="100%" height={showComparison ? 320 : 280}>
-        <LineChart data={mergedData}>
+      <ResponsiveContainer width="100%" height={280}>
+        <LineChart data={data}>
           <CartesianGrid strokeDasharray="3 3" stroke={colors.grid} />
           <XAxis
             dataKey="month"
@@ -71,16 +58,9 @@ export function RevenueChart({ data, previousData }: RevenueChartProps) {
               borderRadius: "8px",
               color: colors.tooltipText,
             }}
-            formatter={(value, name) => {
-              if (value === null || value === undefined) return ["-", name];
-              const label = name === "prevRevenue" ? "Previous Period" : "Revenue";
-              return [formatCurrency(Number(value)), label];
-            }}
+            formatter={(value) => [formatCurrency(Number(value)), "Revenue"]}
             labelStyle={{ color: colors.tooltipLabel }}
           />
-          {showComparison && (
-            <Legend wrapperStyle={{ color: colors.tickText, fontSize: 12 }} />
-          )}
           {avgRevenue > 0 && (
             <ReferenceLine
               y={avgRevenue}
@@ -98,27 +78,12 @@ export function RevenueChart({ data, previousData }: RevenueChartProps) {
           <Line
             type="monotone"
             dataKey="revenue"
-            name="Current Period"
             stroke="#818cf8"
             strokeWidth={2}
             dot={{ fill: "#818cf8", r: 4 }}
             activeDot={{ r: 6, fill: "#6366f1" }}
             animationDuration={800}
           />
-          {showComparison && (
-            <Line
-              type="monotone"
-              dataKey="prevRevenue"
-              name="Previous Period"
-              stroke="#818cf8"
-              strokeWidth={1.5}
-              strokeDasharray="6 3"
-              strokeOpacity={0.4}
-              dot={{ fill: "#818cf8", r: 2, fillOpacity: 0.4 }}
-              animationDuration={800}
-              connectNulls={false}
-            />
-          )}
           <Brush
             dataKey="month"
             height={24}

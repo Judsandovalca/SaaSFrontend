@@ -51,7 +51,6 @@ export interface FilterState {
   startMonth: string;
   endMonth: string;
   selectedTiers: Array<"Free" | "Pro" | "Enterprise">;
-  compareMode: boolean;
 }
 
 export interface DashboardData {

@@ -52,7 +52,7 @@ function Dashboard() {
     return () => clearTimeout(timer);
   }, []);
 
-  const { current: data, previous, compareMode } = useFilteredData();
+  const data = useFilteredData();
 
   const latestRevenue = data.monthlyRevenue[data.monthlyRevenue.length - 1];
   const prevRevenue = data.monthlyRevenue[data.monthlyRevenue.length - 2];
@@ -178,10 +178,7 @@ function Dashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <ErrorBoundary fallbackTitle="Revenue chart failed to load">
               <Suspense fallback={<ChartSkeleton />}>
-                <RevenueChart
-                  data={data.monthlyRevenue}
-                  previousData={compareMode && previous ? previous.monthlyRevenue : undefined}
-                />
+                <RevenueChart data={data.monthlyRevenue} />
               </Suspense>
             </ErrorBoundary>
             <ErrorBoundary fallbackTitle="User growth chart failed to load">
