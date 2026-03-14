@@ -1,6 +1,6 @@
 import { useFilters } from "@/context/FilterContext";
 import { allMonths } from "@/data/mockData";
-import { RotateCcw } from "lucide-react";
+import { RotateCcw, X } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -10,6 +10,9 @@ import {
 } from "@/components/ui/select";
 
 const TIERS = ["Free", "Pro", "Enterprise"] as const;
+
+const DEFAULT_START = allMonths[0];
+const DEFAULT_END = allMonths[allMonths.length - 1];
 
 export function FilterBar() {
   const { filters, setDateRange, setTiers, resetFilters } = useFilters();
@@ -44,68 +47,107 @@ export function FilterBar() {
     }
   };
 
+  const isDefault =
+    filters.startMonth === DEFAULT_START &&
+    filters.endMonth === DEFAULT_END &&
+    filters.selectedTiers.length === TIERS.length;
+
+  const activeChips: string[] = [];
+  if (filters.startMonth !== DEFAULT_START || filters.endMonth !== DEFAULT_END) {
+    activeChips.push(`${filters.startMonth} – ${filters.endMonth}`);
+  }
+  const missingTiers = TIERS.filter((t) => !filters.selectedTiers.includes(t));
+  if (missingTiers.length > 0) {
+    activeChips.push(filters.selectedTiers.join(", "));
+  }
+
   return (
-    <div className="flex flex-wrap items-center gap-3 mb-6">
-      <div className="flex items-center gap-2">
-        <label className="text-xs font-medium text-slate-400">From</label>
-        <Select value={filters.startMonth} onValueChange={handleStartChange}>
-          <SelectTrigger className="w-[140px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {allMonths.map((m) => (
-              <SelectItem key={m} value={m}>
-                {m}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+    <div className="mb-6 space-y-3">
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="flex items-center gap-2">
+          <label className="text-xs font-medium text-slate-400">From</label>
+          <Select value={filters.startMonth} onValueChange={handleStartChange}>
+            <SelectTrigger className="w-[140px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {allMonths.map((m) => (
+                <SelectItem key={m} value={m}>
+                  {m}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <label className="text-xs font-medium text-slate-400">To</label>
+          <Select value={filters.endMonth} onValueChange={handleEndChange}>
+            <SelectTrigger className="w-[140px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {allMonths.map((m) => (
+                <SelectItem key={m} value={m}>
+                  {m}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="h-6 w-px bg-slate-700 hidden sm:block" />
+
+        <div className="flex items-center gap-2">
+          {TIERS.map((tier) => {
+            const active = filters.selectedTiers.includes(tier);
+            return (
+              <button
+                key={tier}
+                onClick={() => toggleTier(tier)}
+                aria-pressed={active}
+                className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors cursor-pointer ${
+                  active
+                    ? "bg-indigo-500/20 text-indigo-300 border border-indigo-500/40"
+                    : "bg-slate-800 text-slate-400 border border-slate-700 hover:text-slate-200"
+                }`}
+              >
+                {tier}
+              </button>
+            );
+          })}
+        </div>
+
+        <button
+          onClick={resetFilters}
+          aria-label="Reset all filters"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-slate-800 border border-slate-700 px-3 py-1.5 text-sm text-slate-400 hover:text-slate-200 transition-colors cursor-pointer"
+        >
+          <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
+          Reset
+        </button>
       </div>
 
-      <div className="flex items-center gap-2">
-        <label className="text-xs font-medium text-slate-400">To</label>
-        <Select value={filters.endMonth} onValueChange={handleEndChange}>
-          <SelectTrigger className="w-[140px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {allMonths.map((m) => (
-              <SelectItem key={m} value={m}>
-                {m}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="h-6 w-px bg-slate-700 hidden sm:block" />
-
-      <div className="flex items-center gap-2">
-        {TIERS.map((tier) => {
-          const active = filters.selectedTiers.includes(tier);
-          return (
-            <button
-              key={tier}
-              onClick={() => toggleTier(tier)}
-              className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors cursor-pointer ${
-                active
-                  ? "bg-indigo-500/20 text-indigo-300 border border-indigo-500/40"
-                  : "bg-slate-800 text-slate-400 border border-slate-700 hover:text-slate-200"
-              }`}
+      {!isDefault && activeChips.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs text-slate-500">Active filters:</span>
+          {activeChips.map((chip) => (
+            <span
+              key={chip}
+              className="inline-flex items-center gap-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 px-2.5 py-0.5 text-xs text-indigo-300"
             >
-              {tier}
-            </button>
-          );
-        })}
-      </div>
-
-      <button
-        onClick={resetFilters}
-        className="inline-flex items-center gap-1.5 rounded-lg bg-slate-800 border border-slate-700 px-3 py-1.5 text-sm text-slate-400 hover:text-slate-200 transition-colors cursor-pointer"
-      >
-        <RotateCcw className="h-3.5 w-3.5" />
-        Reset
-      </button>
+              {chip}
+              <button
+                onClick={resetFilters}
+                aria-label={`Remove filter: ${chip}`}
+                className="hover:text-indigo-100 cursor-pointer"
+              >
+                <X className="h-3 w-3" aria-hidden="true" />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

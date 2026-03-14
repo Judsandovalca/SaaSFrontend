@@ -4,56 +4,173 @@ import type {
   SubscriptionTier,
   ChurnRecord,
   SupportTicket,
+  MrrByTier,
 } from "@/types";
 
-export const monthlyRevenue: MonthlyRevenue[] = [
-  { month: "Aug 2025", revenue: 42000, mrr: 42000, arr: 504000 },
-  { month: "Sep 2025", revenue: 45500, mrr: 45500, arr: 546000 },
-  { month: "Oct 2025", revenue: 48200, mrr: 48200, arr: 578400 },
-  { month: "Nov 2025", revenue: 51800, mrr: 51800, arr: 621600 },
-  { month: "Dec 2025", revenue: 49500, mrr: 49500, arr: 594000 },
-  { month: "Jan 2026", revenue: 54200, mrr: 54200, arr: 650400 },
-  { month: "Feb 2026", revenue: 58700, mrr: 58700, arr: 704400 },
-  { month: "Mar 2026", revenue: 62100, mrr: 62100, arr: 745200 },
+// ---------------------------------------------------------------------------
+// Seeded pseudo-random generator for reproducible, realistic data
+// ---------------------------------------------------------------------------
+function createRng(seed: number) {
+  let s = seed;
+  return () => {
+    s = (s * 16807 + 0) % 2147483647;
+    return (s - 1) / 2147483646;
+  };
+}
+
+const rng = createRng(42);
+
+function vary(base: number, pct: number): number {
+  return Math.round(base * (1 + (rng() - 0.5) * 2 * pct));
+}
+
+// ---------------------------------------------------------------------------
+// Configuration — SaaS growth model
+// ---------------------------------------------------------------------------
+const MONTHS = [
+  "Aug 2025", "Sep 2025", "Oct 2025", "Nov 2025",
+  "Dec 2025", "Jan 2026", "Feb 2026", "Mar 2026",
 ];
 
-export const userSignups: UserSignup[] = [
-  { month: "Aug 2025", signups: 320, activeUsers: 1850, churnedUsers: 45 },
-  { month: "Sep 2025", signups: 385, activeUsers: 2140, churnedUsers: 52 },
-  { month: "Oct 2025", signups: 410, activeUsers: 2450, churnedUsers: 48 },
-  { month: "Nov 2025", signups: 475, activeUsers: 2820, churnedUsers: 55 },
-  { month: "Dec 2025", signups: 350, activeUsers: 3050, churnedUsers: 72 },
-  { month: "Jan 2026", signups: 520, activeUsers: 3430, churnedUsers: 58 },
-  { month: "Feb 2026", signups: 580, activeUsers: 3890, churnedUsers: 63 },
-  { month: "Mar 2026", signups: 610, activeUsers: 4350, churnedUsers: 55 },
-];
+const TIER_SPLIT = { free: 0.60, pro: 0.30, enterprise: 0.10 };
+const PRO_ARPU = 35;       // $/user/month
+const ENTERPRISE_ARPU = 120; // $/user/month
 
-export const subscriptionDistribution: SubscriptionTier[] = [
-  { tier: "Free", count: 2610, revenue: 0, percentage: 60 },
-  { tier: "Pro", count: 1305, revenue: 45675, percentage: 30 },
-  { tier: "Enterprise", count: 435, revenue: 16425, percentage: 10 },
-];
+const BASE_SIGNUPS = 320;
+const SIGNUP_GROWTH = 0.09; // ~9% MoM signup growth
+const BASE_ACTIVE = 1850;
 
-export const churnData: ChurnRecord[] = [
-  { month: "Aug 2025", churnRate: 2.4, retentionRate: 97.6, churnedCustomers: 45 },
-  { month: "Sep 2025", churnRate: 2.8, retentionRate: 97.2, churnedCustomers: 52 },
-  { month: "Oct 2025", churnRate: 2.1, retentionRate: 97.9, churnedCustomers: 48 },
-  { month: "Nov 2025", churnRate: 3.2, retentionRate: 96.8, churnedCustomers: 55 },
-  { month: "Dec 2025", churnRate: 5.6, retentionRate: 94.4, churnedCustomers: 72 },
-  { month: "Jan 2026", churnRate: 3.1, retentionRate: 96.9, churnedCustomers: 58 },
-  { month: "Feb 2026", churnRate: 2.9, retentionRate: 97.1, churnedCustomers: 63 },
-  { month: "Mar 2026", churnRate: 2.3, retentionRate: 97.7, churnedCustomers: 55 },
-];
+const BASE_CHURN_RATE = 2.4; // %
+const CHURN_SPIKE_MONTH = 4; // Dec 2025 (index 4) — holiday churn spike
 
-export const supportTickets: SupportTicket[] = [
-  { month: "Aug 2025", opened: 145, resolved: 138, avgResponseHours: 4.2 },
-  { month: "Sep 2025", opened: 162, resolved: 155, avgResponseHours: 3.8 },
-  { month: "Oct 2025", opened: 158, resolved: 160, avgResponseHours: 3.5 },
-  { month: "Nov 2025", opened: 178, resolved: 170, avgResponseHours: 4.0 },
-  { month: "Dec 2025", opened: 195, resolved: 180, avgResponseHours: 5.1 },
-  { month: "Jan 2026", opened: 172, resolved: 175, avgResponseHours: 3.2 },
-  { month: "Feb 2026", opened: 168, resolved: 170, avgResponseHours: 2.9 },
-  { month: "Mar 2026", opened: 155, resolved: 158, avgResponseHours: 2.6 },
-];
+const BASE_TICKETS_OPENED = 145;
+const BASE_AVG_RESPONSE = 4.2;
 
-export const allMonths = monthlyRevenue.map((r) => r.month);
+// ---------------------------------------------------------------------------
+// Generator functions — each metric is derived from user/tier model
+// ---------------------------------------------------------------------------
+function generateUserSignups(): UserSignup[] {
+  let activeUsers = BASE_ACTIVE;
+  let signups = BASE_SIGNUPS;
+
+  return MONTHS.map((month, i) => {
+    if (i > 0) {
+      signups = vary(Math.round(BASE_SIGNUPS * Math.pow(1 + SIGNUP_GROWTH, i)), 0.05);
+    }
+
+    const churnRate = i === CHURN_SPIKE_MONTH
+      ? BASE_CHURN_RATE * 2.2
+      : vary(BASE_CHURN_RATE * 10, 0.25) / 10;
+    const churnedUsers = Math.round(activeUsers * (churnRate / 100));
+
+    if (i > 0) {
+      activeUsers = activeUsers + signups - churnedUsers;
+    }
+
+    const freeUsers = Math.round(activeUsers * TIER_SPLIT.free);
+    const proUsers = Math.round(activeUsers * TIER_SPLIT.pro);
+    const enterpriseUsers = activeUsers - freeUsers - proUsers;
+
+    return {
+      month,
+      signups,
+      activeUsers,
+      churnedUsers,
+      freeUsers,
+      proUsers,
+      enterpriseUsers,
+    };
+  });
+}
+
+function generateMonthlyRevenue(users: UserSignup[]): MonthlyRevenue[] {
+  return users.map((u) => {
+    const proRevenue = u.proUsers * PRO_ARPU;
+    const enterpriseRevenue = u.enterpriseUsers * ENTERPRISE_ARPU;
+    const freeRevenue = 0;
+    const mrr = proRevenue + enterpriseRevenue;
+    return {
+      month: u.month,
+      revenue: mrr,
+      mrr,
+      arr: mrr * 12,
+      freeRevenue,
+      proRevenue,
+      enterpriseRevenue,
+    };
+  });
+}
+
+function generateChurnData(users: UserSignup[]): ChurnRecord[] {
+  return users.map((u, i) => {
+    const prevActive = i > 0 ? users[i - 1].activeUsers : u.activeUsers;
+    const churnRate = prevActive > 0
+      ? parseFloat(((u.churnedUsers / prevActive) * 100).toFixed(1))
+      : 0;
+    return {
+      month: u.month,
+      churnRate,
+      retentionRate: parseFloat((100 - churnRate).toFixed(1)),
+      churnedCustomers: u.churnedUsers,
+    };
+  });
+}
+
+function generateSubscriptionDistribution(users: UserSignup[]): SubscriptionTier[] {
+  const latest = users[users.length - 1];
+  const total = latest.activeUsers;
+  return [
+    {
+      tier: "Free",
+      count: latest.freeUsers,
+      revenue: 0,
+      percentage: Math.round((latest.freeUsers / total) * 100),
+    },
+    {
+      tier: "Pro",
+      count: latest.proUsers,
+      revenue: latest.proUsers * PRO_ARPU,
+      percentage: Math.round((latest.proUsers / total) * 100),
+    },
+    {
+      tier: "Enterprise",
+      count: latest.enterpriseUsers,
+      revenue: latest.enterpriseUsers * ENTERPRISE_ARPU,
+      percentage: Math.round((latest.enterpriseUsers / total) * 100),
+    },
+  ];
+}
+
+function generateSupportTickets(): SupportTicket[] {
+  return MONTHS.map((month, i) => {
+    const seasonFactor = i === CHURN_SPIKE_MONTH ? 1.35 : 1;
+    const opened = vary(Math.round(BASE_TICKETS_OPENED * (1 + i * 0.02) * seasonFactor), 0.06);
+    const resolved = vary(opened, 0.04);
+    const avgResponseHours = parseFloat(
+      Math.max(1.5, BASE_AVG_RESPONSE - i * 0.2 + (rng() - 0.5) * 0.4).toFixed(1)
+    );
+    return { month, opened, resolved, avgResponseHours };
+  });
+}
+
+function generateMrrByTier(revenue: MonthlyRevenue[]): MrrByTier[] {
+  return revenue.map((r) => ({
+    month: r.month,
+    free: r.freeRevenue,
+    pro: r.proRevenue,
+    enterprise: r.enterpriseRevenue,
+    total: r.mrr,
+  }));
+}
+
+// ---------------------------------------------------------------------------
+// Generate all datasets (interconnected via the user model)
+// ---------------------------------------------------------------------------
+export const userSignups = generateUserSignups();
+export const monthlyRevenue = generateMonthlyRevenue(userSignups);
+export const churnData = generateChurnData(userSignups);
+export const subscriptionDistribution = generateSubscriptionDistribution(userSignups);
+export const supportTickets = generateSupportTickets();
+export const mrrByTier = generateMrrByTier(monthlyRevenue);
+
+export const allMonths = MONTHS;

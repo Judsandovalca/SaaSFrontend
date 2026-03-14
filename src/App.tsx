@@ -32,6 +32,11 @@ const ChurnTable = lazy(() =>
     default: m.ChurnTable,
   }))
 );
+const MrrAreaChart = lazy(() =>
+  import("@/components/charts/MrrAreaChart").then((m) => ({
+    default: m.MrrAreaChart,
+  }))
+);
 
 function getChange(current: number, previous: number): number {
   if (previous === 0) return 0;
@@ -62,6 +67,12 @@ function Dashboard() {
 
   const hasEnoughData = data.monthlyRevenue.length >= 2;
 
+  // Sparkline data arrays for each metric card
+  const revenueSparkline = data.monthlyRevenue.map((d) => d.revenue);
+  const usersSparkline = data.userSignups.map((d) => d.activeUsers);
+  const churnSparkline = data.churnData.map((d) => d.churnRate);
+  const supportSparkline = data.supportTickets.map((d) => d.avgResponseHours);
+
   return (
     <DashboardLayout>
       <FilterBar />
@@ -77,11 +88,26 @@ function Dashboard() {
             <ChartSkeleton />
             <ChartSkeleton />
             <ChartSkeleton />
+            <ChartSkeleton />
             <TableSkeleton />
           </div>
         </>
       ) : !latestRevenue ? (
-        <div className="rounded-xl bg-slate-800 border border-slate-700 p-12 text-center">
+        <div className="flex flex-col items-center justify-center rounded-xl bg-slate-800 border border-slate-700 p-12 text-center gap-3">
+          <svg
+            className="h-12 w-12 text-slate-600"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={1.5}
+            aria-hidden="true"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M3 3v18h18M7 16l4-8 4 5 4-7"
+            />
+          </svg>
           <p className="text-slate-400">
             No data matches the current filters. Try adjusting your selection.
           </p>
@@ -91,6 +117,7 @@ function Dashboard() {
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
             <MetricCard
               title="Total Revenue"
+              tooltip="Total Monthly Recurring Revenue (MRR) — the sum of all subscription payments received this month."
               value={`$${(latestRevenue.revenue / 1000).toFixed(1)}K`}
               change={
                 hasEnoughData
@@ -98,10 +125,12 @@ function Dashboard() {
                   : 0
               }
               trend="up"
-              icon={<DollarSign className="h-5 w-5" />}
+              icon={<DollarSign className="h-5 w-5" aria-hidden="true" />}
+              sparklineData={revenueSparkline}
             />
             <MetricCard
               title="Active Users"
+              tooltip="Total number of users with an active account (Free, Pro, or Enterprise) at the end of this month."
               value={latestUsers?.activeUsers.toLocaleString() ?? "—"}
               change={
                 hasEnoughData && latestUsers && prevUsers
@@ -109,10 +138,12 @@ function Dashboard() {
                   : 0
               }
               trend="up"
-              icon={<Users className="h-5 w-5" />}
+              icon={<Users className="h-5 w-5" aria-hidden="true" />}
+              sparklineData={usersSparkline}
             />
             <MetricCard
               title="Churn Rate"
+              tooltip="Percentage of active customers who cancelled their subscription this month. Lower is better — under 5% is considered healthy for SaaS."
               value={latestChurn ? `${latestChurn.churnRate}%` : "—"}
               change={
                 hasEnoughData && latestChurn && prevChurn
@@ -120,10 +151,12 @@ function Dashboard() {
                   : 0
               }
               trend="down"
-              icon={<TrendingDown className="h-5 w-5" />}
+              icon={<TrendingDown className="h-5 w-5" aria-hidden="true" />}
+              sparklineData={churnSparkline}
             />
             <MetricCard
               title="Avg Response Time"
+              tooltip="Average time (in hours) for the support team to respond to a customer ticket this month. Lower is better."
               value={
                 latestSupport ? `${latestSupport.avgResponseHours}h` : "—"
               }
@@ -136,7 +169,8 @@ function Dashboard() {
                   : 0
               }
               trend="down"
-              icon={<Headphones className="h-5 w-5" />}
+              icon={<Headphones className="h-5 w-5" aria-hidden="true" />}
+              sparklineData={supportSparkline}
             />
           </div>
 
@@ -149,6 +183,11 @@ function Dashboard() {
             <ErrorBoundary fallbackTitle="User growth chart failed to load">
               <Suspense fallback={<ChartSkeleton />}>
                 <UserGrowthChart data={data.userSignups} />
+              </Suspense>
+            </ErrorBoundary>
+            <ErrorBoundary fallbackTitle="MRR chart failed to load">
+              <Suspense fallback={<ChartSkeleton />}>
+                <MrrAreaChart data={data.mrrByTier} />
               </Suspense>
             </ErrorBoundary>
             <ErrorBoundary fallbackTitle="Subscription chart failed to load">

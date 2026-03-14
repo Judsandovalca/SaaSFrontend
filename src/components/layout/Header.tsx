@@ -10,9 +10,10 @@ export function Header({ onMenuClick }: HeaderProps) {
       <div className="flex items-center gap-4">
         <button
           onClick={onMenuClick}
+          aria-label="Open navigation menu"
           className="lg:hidden text-slate-400 hover:text-slate-200 cursor-pointer"
         >
-          <Menu className="h-6 w-6" />
+          <Menu className="h-6 w-6" aria-hidden="true" />
         </button>
         <div>
           <h1 className="text-xl font-bold text-slate-100">Dashboard</h1>

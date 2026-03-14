@@ -6,9 +6,10 @@ import {
   subscriptionDistribution,
   churnData,
   supportTickets,
+  mrrByTier,
   allMonths,
 } from "@/data/mockData";
-import type { DashboardData } from "@/types";
+import type { DashboardData, MonthlyRevenue, MrrByTier } from "@/types";
 
 function filterByMonthRange<T extends { month: string }>(
   data: T[],
@@ -25,13 +26,48 @@ function filterByMonthRange<T extends { month: string }>(
   });
 }
 
+type TierName = "Free" | "Pro" | "Enterprise";
+
+function filterRevenueByTiers(
+  data: MonthlyRevenue[],
+  tiers: TierName[]
+): MonthlyRevenue[] {
+  return data.map((row) => {
+    const freeRevenue = tiers.includes("Free") ? row.freeRevenue : 0;
+    const proRevenue = tiers.includes("Pro") ? row.proRevenue : 0;
+    const enterpriseRevenue = tiers.includes("Enterprise") ? row.enterpriseRevenue : 0;
+    const revenue = freeRevenue + proRevenue + enterpriseRevenue;
+    return {
+      ...row,
+      freeRevenue,
+      proRevenue,
+      enterpriseRevenue,
+      revenue,
+      mrr: revenue,
+      arr: revenue * 12,
+    };
+  });
+}
+
+function filterMrrByTiers(data: MrrByTier[], tiers: TierName[]): MrrByTier[] {
+  return data.map((row) => {
+    const free = tiers.includes("Free") ? row.free : 0;
+    const pro = tiers.includes("Pro") ? row.pro : 0;
+    const enterprise = tiers.includes("Enterprise") ? row.enterprise : 0;
+    return { ...row, free, pro, enterprise, total: free + pro + enterprise };
+  });
+}
+
 export function useFilteredData(): DashboardData {
   const { filters } = useFilters();
 
   return useMemo(() => {
     const { startMonth, endMonth, selectedTiers } = filters;
 
-    const filteredRevenue = filterByMonthRange(monthlyRevenue, startMonth, endMonth);
+    const filteredRevenue = filterRevenueByTiers(
+      filterByMonthRange(monthlyRevenue, startMonth, endMonth),
+      selectedTiers
+    );
     const filteredSignups = filterByMonthRange(userSignups, startMonth, endMonth);
     const filteredChurn = filterByMonthRange(churnData, startMonth, endMonth);
     const filteredTickets = filterByMonthRange(supportTickets, startMonth, endMonth);
@@ -40,12 +76,18 @@ export function useFilteredData(): DashboardData {
       selectedTiers.includes(s.tier)
     );
 
+    const filteredMrr = filterMrrByTiers(
+      filterByMonthRange(mrrByTier, startMonth, endMonth),
+      selectedTiers
+    );
+
     return {
       monthlyRevenue: filteredRevenue,
       userSignups: filteredSignups,
       subscriptionDistribution: filteredSubscription,
       churnData: filteredChurn,
       supportTickets: filteredTickets,
+      mrrByTier: filteredMrr,
     };
   }, [filters]);
 }

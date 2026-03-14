@@ -6,8 +6,10 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
+  ReferenceLine,
 } from "recharts";
 import type { MonthlyRevenue } from "@/types";
+import { InfoTooltip } from "@/components/ui/InfoTooltip";
 
 interface RevenueChartProps {
   data: MonthlyRevenue[];
@@ -18,10 +20,16 @@ function formatCurrency(value: number): string {
 }
 
 export function RevenueChart({ data }: RevenueChartProps) {
+  const avgRevenue =
+    data.length > 0
+      ? data.reduce((sum, d) => sum + d.revenue, 0) / data.length
+      : 0;
+
   return (
-    <div className="rounded-xl bg-slate-800 border border-slate-700 p-6">
-      <h3 className="text-sm font-semibold text-slate-200 mb-4">
+    <div className="rounded-xl bg-slate-800 border border-slate-700 p-6 transition-all duration-200 hover:border-slate-600">
+      <h3 className="text-sm font-semibold text-slate-200 mb-4 flex items-center gap-1.5">
         Revenue Trend
+        <InfoTooltip text="Monthly Recurring Revenue (MRR) over time. Shows total income from all paying subscribers each month." />
       </h3>
       <ResponsiveContainer width="100%" height={280}>
         <LineChart data={data}>
@@ -49,6 +57,20 @@ export function RevenueChart({ data }: RevenueChartProps) {
             formatter={(value) => [formatCurrency(Number(value)), "Revenue"]}
             labelStyle={{ color: "#94a3b8" }}
           />
+          {avgRevenue > 0 && (
+            <ReferenceLine
+              y={avgRevenue}
+              stroke="#6366f1"
+              strokeDasharray="6 4"
+              strokeOpacity={0.5}
+              label={{
+                value: `Avg ${formatCurrency(avgRevenue)}`,
+                position: "right",
+                fill: "#94a3b8",
+                fontSize: 11,
+              }}
+            />
+          )}
           <Line
             type="monotone"
             dataKey="revenue"
@@ -56,6 +78,7 @@ export function RevenueChart({ data }: RevenueChartProps) {
             strokeWidth={2}
             dot={{ fill: "#818cf8", r: 4 }}
             activeDot={{ r: 6, fill: "#6366f1" }}
+            animationDuration={800}
           />
         </LineChart>
       </ResponsiveContainer>

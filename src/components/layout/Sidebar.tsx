@@ -37,9 +37,10 @@ export function Sidebar({ open, onClose }: SidebarProps) {
           </div>
           <button
             onClick={onClose}
+            aria-label="Close sidebar"
             className="lg:hidden text-slate-400 hover:text-slate-200 cursor-pointer"
           >
-            <X className="h-5 w-5" />
+            <X className="h-5 w-5" aria-hidden="true" />
           </button>
         </div>
 
@@ -57,7 +58,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                     }
                   `}
                 >
-                  <item.icon className="h-5 w-5" />
+                  <item.icon className="h-5 w-5" aria-hidden="true" />
                   {item.label}
                 </button>
               </li>

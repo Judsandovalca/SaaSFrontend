@@ -3,6 +3,9 @@ export interface MonthlyRevenue {
   revenue: number;
   mrr: number;
   arr: number;
+  freeRevenue: number;
+  proRevenue: number;
+  enterpriseRevenue: number;
 }
 
 export interface UserSignup {
@@ -10,6 +13,9 @@ export interface UserSignup {
   signups: number;
   activeUsers: number;
   churnedUsers: number;
+  freeUsers: number;
+  proUsers: number;
+  enterpriseUsers: number;
 }
 
 export interface SubscriptionTier {
@@ -33,6 +39,14 @@ export interface SupportTicket {
   avgResponseHours: number;
 }
 
+export interface MrrByTier {
+  month: string;
+  free: number;
+  pro: number;
+  enterprise: number;
+  total: number;
+}
+
 export interface FilterState {
   startMonth: string;
   endMonth: string;
@@ -45,4 +59,5 @@ export interface DashboardData {
   subscriptionDistribution: SubscriptionTier[];
   churnData: ChurnRecord[];
   supportTickets: SupportTicket[];
+  mrrByTier: MrrByTier[];
 }
