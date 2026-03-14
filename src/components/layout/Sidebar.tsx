@@ -24,21 +24,22 @@ export function Sidebar({ open, onClose }: SidebarProps) {
       )}
       <aside
         className={`
-          fixed top-0 left-0 z-50 h-full w-64 bg-slate-900 border-r border-slate-700
+          fixed top-0 left-0 z-50 h-full w-64 bg-white border-r border-slate-200
+          dark:bg-slate-900 dark:border-slate-700
           flex flex-col transition-transform duration-200
           lg:static lg:translate-x-0
           ${open ? "translate-x-0" : "-translate-x-full"}
         `}
       >
-        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-700">
+        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-200 dark:border-slate-700">
           <div className="flex items-center gap-3">
-            <LogoIcon className="text-indigo-400" width={28} height={28} />
-            <span className="text-lg font-bold text-slate-100">Metrix</span>
+            <LogoIcon className="text-indigo-500 dark:text-indigo-400" width={28} height={28} />
+            <span className="text-lg font-bold text-slate-900 dark:text-slate-100">Metrix</span>
           </div>
           <button
             onClick={onClose}
             aria-label="Close sidebar"
-            className="lg:hidden text-slate-400 hover:text-slate-200 cursor-pointer"
+            className="lg:hidden text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 cursor-pointer"
           >
             <X className="h-5 w-5" aria-hidden="true" />
           </button>
@@ -53,8 +54,8 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                     w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer
                     ${
                       item.active
-                        ? "bg-indigo-500/10 text-indigo-400"
-                        : "text-slate-400 hover:text-slate-200 hover:bg-slate-800"
+                        ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400"
+                        : "text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800"
                     }
                   `}
                 >

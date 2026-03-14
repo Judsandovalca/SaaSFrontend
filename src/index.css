@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-sans: "Inter", system-ui, -apple-system, sans-serif;
   --color-primary-400: #818cf8;
@@ -10,11 +12,23 @@
 
 body {
   margin: 0;
-  background-color: #0f172a;
-  color: #e2e8f0;
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: #f8fafc;
+  color: #1e293b;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.dark body,
+body:where(.dark *) {
+  background-color: #0f172a;
+  color: #e2e8f0;
+}
+
+:root.dark body {
+  background-color: #0f172a;
+  color: #e2e8f0;
 }
 
 #root {

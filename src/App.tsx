@@ -4,6 +4,7 @@ import { MetricCard } from "@/components/cards/MetricCard";
 import { FilterBar } from "@/components/filters/FilterBar";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { FilterProvider } from "@/context/FilterContext";
+import { ThemeProvider } from "@/context/ThemeContext";
 import { useFilteredData } from "@/hooks/useFilteredData";
 import {
   CardSkeleton,
@@ -51,7 +52,7 @@ function Dashboard() {
     return () => clearTimeout(timer);
   }, []);
 
-  const data = useFilteredData();
+  const { current: data, previous, compareMode } = useFilteredData();
 
   const latestRevenue = data.monthlyRevenue[data.monthlyRevenue.length - 1];
   const prevRevenue = data.monthlyRevenue[data.monthlyRevenue.length - 2];
@@ -93,7 +94,7 @@ function Dashboard() {
           </div>
         </>
       ) : !latestRevenue ? (
-        <div className="flex flex-col items-center justify-center rounded-xl bg-slate-800 border border-slate-700 p-12 text-center gap-3">
+        <div className="flex flex-col items-center justify-center rounded-xl bg-slate-800 border border-slate-700 p-12 text-center gap-3 dark:bg-slate-800 dark:border-slate-700">
           <svg
             className="h-12 w-12 text-slate-600"
             fill="none"
@@ -177,7 +178,10 @@ function Dashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <ErrorBoundary fallbackTitle="Revenue chart failed to load">
               <Suspense fallback={<ChartSkeleton />}>
-                <RevenueChart data={data.monthlyRevenue} />
+                <RevenueChart
+                  data={data.monthlyRevenue}
+                  previousData={compareMode && previous ? previous.monthlyRevenue : undefined}
+                />
               </Suspense>
             </ErrorBoundary>
             <ErrorBoundary fallbackTitle="User growth chart failed to load">
@@ -209,9 +213,11 @@ function Dashboard() {
 
 function App() {
   return (
-    <FilterProvider>
-      <Dashboard />
-    </FilterProvider>
+    <ThemeProvider>
+      <FilterProvider>
+        <Dashboard />
+      </FilterProvider>
+    </ThemeProvider>
   );
 }
 

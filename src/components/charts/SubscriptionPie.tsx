@@ -8,6 +8,7 @@ import {
 } from "recharts";
 import type { SubscriptionTier } from "@/types";
 import { InfoTooltip } from "@/components/ui/InfoTooltip";
+import { useChartTheme } from "@/hooks/useChartTheme";
 
 interface SubscriptionPieProps {
   data: SubscriptionTier[];
@@ -20,11 +21,12 @@ const COLORS: Record<string, string> = {
 };
 
 export function SubscriptionPie({ data }: SubscriptionPieProps) {
+  const colors = useChartTheme();
   const total = data.reduce((sum, d) => sum + d.count, 0);
 
   return (
-    <div className="rounded-xl bg-slate-800 border border-slate-700 p-6 transition-all duration-200 hover:border-slate-600">
-      <h3 className="text-sm font-semibold text-slate-200 mb-4 flex items-center gap-1.5">
+    <div className="rounded-xl bg-white border border-slate-200 dark:bg-slate-800 dark:border-slate-700 p-6 transition-all duration-200 hover:border-slate-300 dark:hover:border-slate-600">
+      <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-1.5">
         Subscription Breakdown
         <InfoTooltip text="Distribution of active users across subscription tiers: Free (no cost), Pro ($35/mo), and Enterprise ($120/mo)." />
       </h3>
@@ -48,10 +50,10 @@ export function SubscriptionPie({ data }: SubscriptionPieProps) {
           </Pie>
           <Tooltip
             contentStyle={{
-              backgroundColor: "#1e293b",
-              border: "1px solid #334155",
+              backgroundColor: colors.tooltipBg,
+              border: `1px solid ${colors.tooltipBorder}`,
               borderRadius: "8px",
-              color: "#e2e8f0",
+              color: colors.tooltipText,
             }}
             formatter={(value, name) => [
               `${Number(value).toLocaleString()} users`,
@@ -59,7 +61,7 @@ export function SubscriptionPie({ data }: SubscriptionPieProps) {
             ]}
           />
           <Legend
-            wrapperStyle={{ color: "#94a3b8", fontSize: 12 }}
+            wrapperStyle={{ color: colors.tickText, fontSize: 12 }}
             formatter={(value: string) => {
               const tier = data.find((d) => d.tier === value);
               const pct = total > 0 && tier ? Math.round((tier.count / total) * 100) : 0;

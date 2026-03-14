@@ -74,17 +74,17 @@ export function MetricCard({
   const sparkData = sparklineData?.map((v, i) => ({ i, v }));
 
   return (
-    <div className="rounded-xl bg-slate-800 border border-slate-700 p-6 flex flex-col gap-2 transition-all duration-200 hover:border-slate-600 hover:shadow-lg hover:shadow-slate-900/50">
+    <div className="rounded-xl bg-white border border-slate-200 dark:bg-slate-800 dark:border-slate-700 p-6 flex flex-col gap-2 transition-all duration-200 hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-lg hover:shadow-slate-200/50 dark:hover:shadow-slate-900/50">
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-slate-400 flex items-center gap-1.5">
+        <span className="text-sm font-medium text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
           {title}
           {tooltip && <InfoTooltip text={tooltip} />}
         </span>
-        <span className="text-slate-500">{icon}</span>
+        <span className="text-slate-400 dark:text-slate-500">{icon}</span>
       </div>
 
       <div className="flex items-end justify-between gap-4">
-        <p className="text-2xl font-bold text-slate-100">{animatedValue}</p>
+        <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{animatedValue}</p>
         {sparkData && sparkData.length > 1 && (
           <div className="w-20 h-8 flex-shrink-0">
             <ResponsiveContainer width="100%" height="100%">

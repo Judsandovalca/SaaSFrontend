@@ -10,6 +10,7 @@ import {
 } from "recharts";
 import type { MrrByTier } from "@/types";
 import { InfoTooltip } from "@/components/ui/InfoTooltip";
+import { useChartTheme } from "@/hooks/useChartTheme";
 
 interface MrrAreaChartProps {
   data: MrrByTier[];
@@ -20,9 +21,11 @@ function formatCurrency(value: number): string {
 }
 
 export function MrrAreaChart({ data }: MrrAreaChartProps) {
+  const colors = useChartTheme();
+
   return (
-    <div className="rounded-xl bg-slate-800 border border-slate-700 p-6 transition-all duration-200 hover:border-slate-600">
-      <h3 className="text-sm font-semibold text-slate-200 mb-4 flex items-center gap-1.5">
+    <div className="rounded-xl bg-white border border-slate-200 dark:bg-slate-800 dark:border-slate-700 p-6 transition-all duration-200 hover:border-slate-300 dark:hover:border-slate-600">
+      <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-1.5">
         MRR by Tier
         <InfoTooltip text="Monthly Recurring Revenue broken down by subscription tier (Pro and Enterprise). Shows how much each plan contributes to total revenue." />
       </h3>
@@ -38,34 +41,34 @@ export function MrrAreaChart({ data }: MrrAreaChartProps) {
               <stop offset="95%" stopColor="#fbbf24" stopOpacity={0} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+          <CartesianGrid strokeDasharray="3 3" stroke={colors.grid} />
           <XAxis
             dataKey="month"
-            tick={{ fill: "#94a3b8", fontSize: 12 }}
+            tick={{ fill: colors.tickText, fontSize: 12 }}
             tickLine={false}
-            axisLine={{ stroke: "#334155" }}
+            axisLine={{ stroke: colors.axis }}
           />
           <YAxis
             tickFormatter={formatCurrency}
-            tick={{ fill: "#94a3b8", fontSize: 12 }}
+            tick={{ fill: colors.tickText, fontSize: 12 }}
             tickLine={false}
             axisLine={false}
             width={55}
           />
           <Tooltip
             contentStyle={{
-              backgroundColor: "#1e293b",
-              border: "1px solid #334155",
+              backgroundColor: colors.tooltipBg,
+              border: `1px solid ${colors.tooltipBorder}`,
               borderRadius: "8px",
-              color: "#e2e8f0",
+              color: colors.tooltipText,
             }}
             formatter={(value, name) => [
               formatCurrency(Number(value)),
               String(name),
             ]}
-            labelStyle={{ color: "#94a3b8" }}
+            labelStyle={{ color: colors.tooltipLabel }}
           />
-          <Legend wrapperStyle={{ color: "#94a3b8", fontSize: 12 }} />
+          <Legend wrapperStyle={{ color: colors.tickText, fontSize: 12 }} />
           <Area
             type="monotone"
             dataKey="pro"
