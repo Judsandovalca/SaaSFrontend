@@ -4,7 +4,7 @@ import { MetricCard } from "@/components/cards/MetricCard";
 import { FilterBar } from "@/components/filters/FilterBar";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { FilterProvider } from "@/context/FilterContext";
-import { ThemeProvider } from "@/context/ThemeContext";
+
 import { useFilteredData } from "@/hooks/useFilteredData";
 import {
   CardSkeleton,
@@ -210,11 +210,9 @@ function Dashboard() {
 
 function App() {
   return (
-    <ThemeProvider>
-      <FilterProvider>
-        <Dashboard />
-      </FilterProvider>
-    </ThemeProvider>
+    <FilterProvider>
+      <Dashboard />
+    </FilterProvider>
   );
 }
 
