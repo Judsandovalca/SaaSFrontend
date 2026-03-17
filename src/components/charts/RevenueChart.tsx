@@ -86,12 +86,22 @@ export function RevenueChart({ data }: RevenueChartProps) {
           />
           <Brush
             dataKey="month"
-            height={24}
+            height={28}
             stroke={colors.brushStroke}
             fill={colors.brushFill}
-            travellerWidth={8}
+            travellerWidth={10}
             tickFormatter={(v: string) => v.replace(" 20", " '")}
-          />
+          >
+            <LineChart data={data}>
+              <Line
+                type="monotone"
+                dataKey="revenue"
+                stroke="#475569"
+                strokeWidth={1}
+                dot={false}
+              />
+            </LineChart>
+          </Brush>
         </LineChart>
       </ResponsiveContainer>
     </div>

@@ -34,3 +34,18 @@ body:where(.dark *) {
 #root {
   min-height: 100svh;
 }
+
+/* Recharts Brush dark-mode overrides */
+.recharts-brush-traveller rect {
+  fill: #475569;
+  stroke: #64748b;
+}
+
+.recharts-brush-slide {
+  fill: #818cf8;
+  fill-opacity: 0.15;
+}
+
+.recharts-brush-texts text {
+  fill: #94a3b8;
+}
